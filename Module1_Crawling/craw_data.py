@@ -88,7 +88,7 @@ class TheMealDBCrawler:
         """Lưu dữ liệu món ăn ra file JSON"""
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(self.recipes, f, ensure_ascii=False, indent=4)
-        print(f"✅ Đã lưu {len(self.recipes)} món ăn vào {filename}")
+        print(f"Đã lưu {len(self.recipes)} món ăn vào {filename}")
 
     # ==============================
     # Chạy nhiều từ khóa
