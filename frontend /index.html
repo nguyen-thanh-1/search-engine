@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NomNom - Recipe Search Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noticia+Text:wght@400;700&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-top">
+            <div class="navbar-left">
+                <div class="logo">
+                    <h1><a href="/" style="text-decoration: none; color: inherit;">NomNom</a></h1>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="What do you want to cook today?" />
+                    <button id="searchBtn">
+                        <img src="assets/images/search-icon.svg" alt="Search" />
+                    </button>
+                </div>
+            </div>
+            <div class="navbar-buttons">
+                <button class="btn btn-outline">Sign In</button>
+                <button class="btn btn-primary">Sign Up</button>
+            </div>
+        </div>
+        <div class="navbar-nav">
+            <a href="/" class="nav-link active">Home</a>
+            <a href="/about" class="nav-link">About</a>
+            <a href="/contact" class="nav-link">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Recipe of The Day -->
+    <section class="recipe-of-day">
+        <div class="recipe-image">
+            <img src="assets/images/recipe-of-the-day.png" alt="Recipe of the day" />
+        </div>
+        <div class="recipe-content">
+            <div class="recipe-text">
+                <p class="recipe-label">RECIPE OF THE DAY</p>
+                <h2>Skillet Cacio e Pepe Tortellini With Wilted Greens</h2>
+            </div>
+            <div class="recipe-details">
+                <p class="recipe-author">By Luna Marshall</p>
+                <p class="recipe-description">
+                    Tired of dry, bland burgers? Learn how to make the juiciest, most flavorful homemade burgers using fresh ingredients, the perfect seasoning mix, and expert grilling Read More
+                </p>
+                <div class="recipe-reviews">
+                    <div class="stars">★★★★★</div>
+                    <span>(45)</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recipes Section -->
+    <section class="recipes-section">
+        <div class="recipe-filter">
+            <button class="filter-btn active">Quick Meal</button>
+            <button class="filter-btn">Stir-fry Veggies</button>
+            <button class="filter-btn">Grilled Chicken</button>
+            <button class="filter-btn">Pasta</button>
+            <button class="filter-btn">Side Dishes</button>
+            <button class="filter-btn">Salads</button>
+            <button class="filter-btn">Red Meat Dishes</button>
+            <button class="filter-btn">Dessert</button>
+        </div>
+        <div id="recipesContainer" class="recipes-grid">
+            <!-- Recipe cards will be dynamically loaded here -->
+        </div>
+    </section>
+
+    <!-- Most Popular Recipes -->
+    <section class="section-title-wrapper">
+        <div class="section-header">
+            <div class="title-block">
+                <p class="section-label">Most popular</p>
+                <h2>Most popular recipes</h2>
+            </div>
+            <button class="btn btn-primary">View all popular</button>
+        </div>
+        <div class="recipes-slider">
+            <!-- Recipe cards will be added here -->
+        </div>
+    </section>
+
+    <!-- Recent Articles -->
+    <section class="articles-section">
+        <div class="section-header">
+            <div class="title-block">
+                <p class="section-label">About NomNom</p>
+                <h2>Recent Articles</h2>
+            </div>
+            <button class="btn btn-primary">View all Articles</button>
+        </div>
+        <div class="articles-grid">
+            <article class="article-card">
+                <img src="assets/images/article-street-food.png" alt="Street Food" />
+                <div class="article-content">
+                    <h3>The Magic of Street Food: Global Flavors on Every Corner</h3>
+                    <p>Explore the world through its vibrant street food culture, from spicy tacos in Mexico to steamy dumplings in China Read More</p>
+                </div>
+            </article>
+            <article class="article-card">
+                <img src="assets/images/article-sustainable.png" alt="Sustainable Eating" />
+                <div class="article-content">
+                    <h3>From Farm to Table: The Rise of Sustainable Eating</h3>
+                    <p>Sustainable eating is more than just a trend—it's a movement that's reshaping the way we think about food. Learn how the farm-to-table Read More</p>
+                </div>
+            </article>
+            <article class="article-card">
+                <img src="assets/images/article-comfort-food.png" alt="Comfort Food" />
+                <div class="article-content">
+                    <h3>Comfort Food Around the World: A Journey to Cozy, Hearty Meals</h3>
+                    <p>Discover the comforting, soul-warming dishes that bring people together across the globe. From American mac and cheese to Read More</p>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter-section">
+        <div class="newsletter-content">
+            <h2>Stay updated with us</h2>
+            <p>Subscribe to our newsletter and get mouthwatering recipes, expert cooking tips, and exclusive content delivered straight to your inbox.</p>
+            <div class="newsletter-form">
+                <input type="email" placeholder="Enter your email address" />
+                <button class="btn btn-primary">Subscribe</button>
+            </div>
+        </div>
+        <div class="social-follow">
+            <h2>Follow us on:</h2>
+            <img src="assets/images/social-icons.svg" alt="Social Media" />
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-column">
+                <div class="logo">
+                    <h2>NomNom</h2>
+                </div>
+                <p>At NomNom, we don't just share recipes, we share experiences. From comforting classics to bold new flavors, we explore the art of cooking in a way that's fun, approachable, and full of flavor.</p>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#">Recipes</a></li>
+                    <li><a href="#">Blog & Articles</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Get Our Newsletter</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Best Recipes</h3>
+                <ul>
+                    <li><a href="#">From our newsletter</a></li>
+                    <li><a href="#">Healthy meals</a></li>
+                    <li><a href="#">Quick meals</a></li>
+                    <li><a href="#">Vegan meals</a></li>
+                    <li><a href="#">Non veg meals</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Disclaimer & Privacy</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Affiliate Disclosure</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 NomNom - All rights reserved</p>
+            <p>Template designed by TemplatesJungle</p>
+        </div>
+    </footer>
+
+    <script src="src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "nomnom-food-search-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for NomNom food recipe search engine",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server . -p 5173 -c-1",
+    "dev": "http-server . -p 5173 -c-1 -o",
+    "server": "node server.js",
+    "build": "echo 'No build process needed for vanilla HTML/CSS/JS'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "keywords": [
+    "food",
+    "recipe",
+    "search",
+    "cooking",
+    "nomnom"
+  ],
+  "author": "NomNom Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
