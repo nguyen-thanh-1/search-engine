@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Details - NomNom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noticia+Text:wght@400;700&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/recipe-detail.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-top">
+            <div class="navbar-left">
+                <div class="logo">
+                    <h1><a href="/" style="text-decoration: none; color: inherit;">NomNom</a></h1>
+                </div>
+            </div>
+            <div class="navbar-buttons">
+                <button class="btn btn-outline">Sign In</button>
+                <button class="btn btn-primary">Sign Up</button>
+            </div>
+        </div>
+        <div class="navbar-nav">
+            <a href="/" class="nav-link active">Home</a>
+            <a href="/about" class="nav-link">About</a>
+            <a href="/contact" class="nav-link">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Recipe Detail -->
+    <main class="recipe-detail-container">
+        <div class="loading" id="loadingState">Loading...</div>
+        <div id="recipeDetail" style="display: none;">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-column">
+                <div class="logo">
+                    <h2>NomNom</h2>
+                </div>
+                <p>At NomNom, we don't just share recipes, we share experiences. From comforting classics to bold new flavors, we explore the art of cooking in a way that's fun, approachable, and full of flavor.</p>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#">Recipes</a></li>
+                    <li><a href="#">Blog & Articles</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Get Our Newsletter</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Best Recipes</h3>
+                <ul>
+                    <li><a href="#">From our newsletter</a></li>
+                    <li><a href="#">Healthy meals</a></li>
+                    <li><a href="#">Quick meals</a></li>
+                    <li><a href="#">Vegan meals</a></li>
+                    <li><a href="#">Non veg meals</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Disclaimer & Privacy</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Affiliate Disclosure</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 NomNom - All rights reserved</p>
+            <p>Template designed by TemplatesJungle</p>
+        </div>
+    </footer>
+
+    <script src="src/recipe-detail.js"></script>
+</body>
+</html>
