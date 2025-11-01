@@ -1,5 +1,6 @@
 // Recipe Detail Page Logic
-const LOCAL_RECIPES_PATH = 'data/recipes_with_local_images.json';
+const API_BASE_URL = 'http://localhost:8000/api'; // Backend API URL
+const LOCAL_RECIPES_PATH = 'data/recipes_with_local_images.json'; // Fallback
 
 // Get recipe ID from URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -18,11 +19,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Load Recipe Detail
+// Load Recipe Detail using Backend API
 async function loadRecipeDetail(id) {
     try {
         showLoading();
-        
+
+        // Try to get recipe from backend API
+        const response = await fetch(`${API_BASE_URL}/recipes/${id}`);
+        if (response.ok) {
+            const recipe = await response.json();
+            displayRecipeDetail(recipe);
+            return;
+        } else if (response.status === 404) {
+            throw new Error('Recipe not found');
+        }
+    } catch (error) {
+        console.error('API load recipe error:', error);
+    }
+
+    // Fallback to local JSON if API fails
+    try {
         const response = await fetch(LOCAL_RECIPES_PATH);
         if (!response.ok) {
             throw new Error('Unable to load recipe data');
@@ -36,9 +52,9 @@ async function loadRecipeDetail(id) {
         }
 
         displayRecipeDetail(recipe);
-    } catch (error) {
-        console.error('Load recipe error:', error);
-        showError(error.message || 'Unable to load recipe. Please try again later.');
+    } catch (fallbackError) {
+        console.error('Fallback load recipe error:', fallbackError);
+        showError(fallbackError.message || 'Unable to load recipe. Please try again later.');
     }
 }
 

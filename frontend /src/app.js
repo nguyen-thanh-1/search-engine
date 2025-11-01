@@ -1,6 +1,6 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:5000/api'; // Update với địa chỉ backend của bạn
-const LOCAL_RECIPES_PATH = 'data/recipes_with_local_images.json';
+const API_BASE_URL = 'http://localhost:8000/api'; // Backend API URL
+const LOCAL_RECIPES_PATH = 'data/recipes_with_local_images.json'; // Fallback
 
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
@@ -44,38 +44,67 @@ function setupEventListeners() {
     });
 }
 
-// Load Local Recipes from JSON file
+// Load Recipes from Backend API
 async function loadLocalRecipes() {
     try {
         showLoading();
-        const response = await fetch(LOCAL_RECIPES_PATH);
-        
+        const response = await fetch(`${API_BASE_URL}/recipes`);
+
         if (!response.ok) {
-            throw new Error('Không thể tải dữ liệu công thức');
+            throw new Error('Không thể tải dữ liệu công thức từ server');
         }
 
         allRecipes = await response.json();
         filteredRecipes = [...allRecipes];
-        console.log(`Loaded ${allRecipes.length} recipes`);
+        console.log(`Loaded ${allRecipes.length} recipes from API`);
         displayRecipesWithPagination();
-        
+
         // Fill other sections with data
-        fillPopularRecipes();
+        await fillPopularRecipes();
     } catch (error) {
-        console.error('Load local recipes error:', error);
-        displaySampleRecipes();
+        console.error('Load recipes error:', error);
+        // Fallback to local JSON if API fails
+        try {
+            const fallbackResponse = await fetch(LOCAL_RECIPES_PATH);
+            if (fallbackResponse.ok) {
+                allRecipes = await fallbackResponse.json();
+                filteredRecipes = [...allRecipes];
+                console.log(`Loaded ${allRecipes.length} recipes from fallback`);
+                displayRecipesWithPagination();
+                await fillPopularRecipes();
+            } else {
+                throw new Error('Fallback also failed');
+            }
+        } catch (fallbackError) {
+            console.error('Fallback error:', fallbackError);
+            displaySampleRecipes();
+        }
     } finally {
         hideLoading();
     }
 }
 
-// Fill Popular Recipes Section
-function fillPopularRecipes() {
+// Fill Popular Recipes Section using Backend API
+async function fillPopularRecipes() {
     const containers = document.querySelectorAll('.section-title-wrapper .recipes-slider');
     if (containers.length < 1) return;
-    
+
+    try {
+        // Try to get popular recipes from backend API
+        const response = await fetch(`${API_BASE_URL}/popular?limit=4`);
+
+        if (response.ok) {
+            const popular = await response.json();
+            const popularContainer = containers[0];
+            popularContainer.innerHTML = popular.map(recipe => createSmallRecipeCard(recipe)).join('');
+            return;
+        }
+    } catch (error) {
+        console.log('Popular API not available, using fallback:', error);
+    }
+
+    // Fallback: Take recipes with longer instructions as "popular"
     const popularContainer = containers[0];
-    // Take recipes with longer instructions as "popular"
     const popular = [...allRecipes]
         .sort((a, b) => (b.instructions?.length || 0) - (a.instructions?.length || 0))
         .slice(0, 4);
@@ -121,10 +150,10 @@ function createSmallRecipeCard(recipe) {
     `;
 }
 
-// Handle Search
+// Handle Search using Backend API
 async function handleSearch() {
-    const query = searchInput.value.trim().toLowerCase();
-    
+    const query = searchInput.value.trim();
+
     if (query === '') {
         // Reset to show all recipes
         filteredRecipes = [...allRecipes];
@@ -135,27 +164,62 @@ async function handleSearch() {
 
     try {
         showLoading();
-        
-        // Search in local recipes
-        filteredRecipes = allRecipes.filter(recipe => 
-            recipe.title.toLowerCase().includes(query) ||
-            recipe.category.toLowerCase().includes(query) ||
-            recipe.area.toLowerCase().includes(query) ||
-            (recipe.ingredients && recipe.ingredients.some(ing => 
-                (typeof ing === 'string' && ing.toLowerCase().includes(query)) ||
-                (typeof ing === 'object' && ing.ingredient && ing.ingredient.toLowerCase().includes(query))
-            ))
-        );
-        
+
+        // Use backend search API
+        const searchResponse = await fetch(`${API_BASE_URL}/search`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: query,
+                top_k: 50 // Get more results for local filtering
+            })
+        });
+
+        if (!searchResponse.ok) {
+            throw new Error('Search request failed');
+        }
+
+        const searchResults = await searchResponse.json();
+        filteredRecipes = searchResults.map(result => ({
+            ...result,
+            // Ensure all required fields exist
+            category: result.category || 'N/A',
+            area: result.area || 'N/A',
+            image: result.image || 'assets/images/thai-green-curry.png'
+        }));
+
         currentPage = 1;
         displayRecipesWithPagination();
-        
+
         if (filteredRecipes.length === 0) {
             showError(`Không tìm thấy công thức nào cho "${query}"`);
         }
     } catch (error) {
         console.error('Search error:', error);
-        showError('Không thể tìm kiếm công thức. Vui lòng thử lại sau.');
+        // Fallback to local search if API fails
+        try {
+            filteredRecipes = allRecipes.filter(recipe =>
+                recipe.title.toLowerCase().includes(query.toLowerCase()) ||
+                recipe.category.toLowerCase().includes(query.toLowerCase()) ||
+                recipe.area.toLowerCase().includes(query.toLowerCase()) ||
+                (recipe.ingredients && recipe.ingredients.some(ing =>
+                    (typeof ing === 'string' && ing.toLowerCase().includes(query.toLowerCase())) ||
+                    (typeof ing === 'object' && ing.ingredient && ing.ingredient.toLowerCase().includes(query.toLowerCase()))
+                ))
+            );
+
+            currentPage = 1;
+            displayRecipesWithPagination();
+
+            if (filteredRecipes.length === 0) {
+                showError(`Không tìm thấy công thức nào cho "${query}"`);
+            }
+        } catch (fallbackError) {
+            console.error('Fallback search error:', fallbackError);
+            showError('Không thể tìm kiếm công thức. Vui lòng thử lại sau.');
+        }
     } finally {
         hideLoading();
     }
