@@ -1,4 +1,4 @@
-from pathlib import Path
+import os
 from typing import List
 
 import joblib
@@ -13,24 +13,20 @@ class SearchEngine:
         """
         Khởi tạo Module 3: Tải các file chỉ mục đã được build.
         """
-        print("--- Khởi tạo Module 3: Truy vấn & Xếp hạng ---")
+        print("--- Initializing Search Engine ---")
 
-        # Get paths from app_config with fallbacks
-        data_dir = Path(app_config.DATA_DIR) if app_config.DATA_DIR else Path("data")
-        vectorizer_file = Path(app_config.VECTORIZER_FILE) if app_config.VECTORIZER_FILE else data_dir / "vectorizer.joblib"
-        matrix_file = Path(app_config.MATRIX_FILE) if app_config.MATRIX_FILE else data_dir / "tfidf_matrix.joblib"
-        documents_file = Path(app_config.DOCUMENTS_FILE) if app_config.DOCUMENTS_FILE else data_dir / "documents.joblib"
-        map_file = data_dir / "doc_id_map.joblib"
+        data_dir = app_config.DATA_DIR or "data"
 
         try:
-            self.vectorizer = joblib.load(vectorizer_file)
-            self.tfidf_matrix = joblib.load(matrix_file)
-            self.documents = joblib.load(documents_file)
-            self.doc_id_map = joblib.load(map_file)
-            print("Tải chỉ mục và dữ liệu thành công.")
+            self.vectorizer = joblib.load(app_config.VECTORIZER_FILE_PATH)
+            self.tfidf_matrix = joblib.load(app_config.MATRIX_FILE_PATH)
+            self.documents = joblib.load(app_config.DOCUMENTS_FILE_PATH)
+            doc_id_map_path = os.path.join(data_dir, "doc_id_map.joblib")
+            self.doc_id_map = joblib.load(doc_id_map_path)
+            print("Loaded index files successfully")
         except FileNotFoundError:
-            print(f"LỖI: Không tìm thấy file chỉ mục trong '{data_dir}'.")
-            print("Vui lòng chạy file 'build_index.py' trước tiên.")
+            print(f"ERROR: Index files not found in '{data_dir}'.")
+            print("Please run indexing first.")
             exit()
 
     def search(self, query, top_k=10):

@@ -31,7 +31,7 @@ def search_recipes(request: SearchRequest):
         # Load full documents to check ingredients
         try:
             import joblib
-            documents_dict = joblib.load(app_config.DOCUMENTS_FILE)
+            documents_dict = joblib.load(app_config.DOCUMENTS_FILE_PATH)
 
             filtered_results = []
             for result in results:

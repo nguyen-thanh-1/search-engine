@@ -1,10 +1,18 @@
 import json
-import os
 
 import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from src.app_config import app_config
+
+
+def load_documents():
+    """Load documents from JSON file."""
+    if not app_config.JSON_FILE_PATH:
+        raise ValueError("JSON_FILE_PATH not configured")
+
+    with open(app_config.JSON_FILE_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def run_indexing():
@@ -14,23 +22,8 @@ def run_indexing():
     3. Build chỉ mục TF-IDF.
     4. Lưu chỉ mục và dữ liệu ra file.
     """
-    # Create data directory if it doesn't exist
-    if app_config.DATA_DIR and not os.path.exists(app_config.DATA_DIR):
-        os.makedirs(app_config.DATA_DIR, exist_ok=True)
-
-    try:
-        with open(app_config.JSON_FILE, "r", encoding="utf-8") as f:
-            documents = json.load(f)
-    except FileNotFoundError:
-        print(
-            f"LỖI: Không tìm thấy file {app_config.JSON_FILE}. Hãy chắc chắn bạn đã để file này đúng chỗ."
-        )
-        return
-    except json.JSONDecodeError:
-        print(f"LỖI: File {app_config.JSON_FILE} không phải là file JSON hợp lệ.")
-        return
-
-    print(f"Đã tải {len(documents)} tài liệu từ '{app_config.JSON_FILE}'.")
+    documents = load_documents()
+    print(f"Loaded {len(documents)} documents")
 
     processed_docs = []
     doc_id_map = {}
@@ -57,15 +50,15 @@ def run_indexing():
 
     print(f"Kích thước ma trận TF-IDF: {tfidf_matrix.shape}")
 
-    joblib.dump(vectorizer, app_config.VECTORIZER_FILE)
-    joblib.dump(tfidf_matrix, app_config.MATRIX_FILE)
+    joblib.dump(vectorizer, app_config.VECTORIZER_FILE_PATH)
+    joblib.dump(tfidf_matrix, app_config.MATRIX_FILE_PATH)
 
     documents_dict = {doc["id"]: doc for doc in documents}
-    joblib.dump(documents_dict, app_config.DOCUMENTS_FILE)
+    joblib.dump(documents_dict, app_config.DOCUMENTS_FILE_PATH)
 
     # Save doc_id_map using data_dir from app_config
     doc_id_map_path = os.path.join(app_config.DATA_DIR, "doc_id_map.joblib") if app_config.DATA_DIR else "data/doc_id_map.joblib"
     joblib.dump(doc_id_map, doc_id_map_path)
 
-    print(f"Đã lưu các file chỉ mục vào thư mục '{app_config.DATA_DIR}'.")
+    print(f"Saved index files to {app_config.DATA_DIR}")
 

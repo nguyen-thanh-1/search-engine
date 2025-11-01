@@ -22,7 +22,7 @@ def get_all_recipes(
     try:
         # Load documents from joblib file
         import joblib
-        documents_dict = joblib.load(app_config.DOCUMENTS_FILE)
+        documents_dict = joblib.load(app_config.DOCUMENTS_FILE_PATH)
 
         recipes = []
         for recipe_id, recipe_data in documents_dict.items():
@@ -62,7 +62,7 @@ def get_recipe_detail(recipe_id: str):
     """
     try:
         import joblib
-        documents_dict = joblib.load(app_config.DOCUMENTS_FILE)
+        documents_dict = joblib.load(app_config.DOCUMENTS_FILE_PATH)
 
         if recipe_id not in documents_dict:
             raise HTTPException(status_code=404, detail="Recipe not found")
@@ -94,7 +94,7 @@ def get_categories():
     """
     try:
         import joblib
-        documents_dict = joblib.load(app_config.DOCUMENTS_FILE)
+        documents_dict = joblib.load(app_config.DOCUMENTS_FILE_PATH)
 
         categories = set()
         for recipe_data in documents_dict.values():
@@ -117,7 +117,7 @@ def get_areas():
     """
     try:
         import joblib
-        documents_dict = joblib.load(app_config.DOCUMENTS_FILE)
+        documents_dict = joblib.load(app_config.DOCUMENTS_FILE_PATH)
 
         areas = set()
         for recipe_data in documents_dict.values():
@@ -140,7 +140,7 @@ def get_popular_recipes(limit: int = Query(10, description="Number of popular re
     """
     try:
         import joblib
-        documents_dict = joblib.load(app_config.DOCUMENTS_FILE)
+        documents_dict = joblib.load(app_config.DOCUMENTS_FILE_PATH)
 
         popular_recipes = []
         count = 0

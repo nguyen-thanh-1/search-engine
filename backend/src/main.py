@@ -9,8 +9,7 @@ from src.routes.recipes_routes import router as recipes_router
 
 app = FastAPI(
     title="Recipe Search API",
-    description="API for searching recipes using TF-IDF vectorization",
-    debug=app_config.debug,
+    description="API for searching recipes using TF-IDF vectorization"
 )
 
 app.add_middleware(
@@ -33,4 +32,4 @@ app.include_router(crawling_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=app_config.api_host, port=app_config.api_port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
