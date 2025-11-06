@@ -1,0 +1,14 @@
+app = "search-engine"
+primary_region = "sin"
+
+[build]
+builder = "heroku/buildpacks:20"
+
+[env]
+PORT = "8080"
+
+[experimental]
+allowed_public_ports = [8080]
+
+[deploy]
+  release_command = "echo 'Release step'"
