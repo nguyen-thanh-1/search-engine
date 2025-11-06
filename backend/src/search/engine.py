@@ -10,24 +10,10 @@ from src.app_config import app_config
 
 class SearchEngine:
     def __init__(self):
-        """
-        Khởi tạo Module 3: Tải các file chỉ mục đã được build.
-        """
-        print("--- Initializing Search Engine ---")
-
-        data_dir = app_config.DATA_DIR or "data"
-
-        try:
-            self.vectorizer = joblib.load(app_config.VECTORIZER_FILE_PATH)
-            self.tfidf_matrix = joblib.load(app_config.MATRIX_FILE_PATH)
-            self.documents = joblib.load(app_config.DOCUMENTS_FILE_PATH)
-            doc_id_map_path = os.path.join(data_dir, "doc_id_map.joblib")
-            self.doc_id_map = joblib.load(doc_id_map_path)
-            print("Loaded index files successfully")
-        except FileNotFoundError:
-            print(f"ERROR: Index files not found in '{data_dir}'.")
-            print("Please run indexing first.")
-            exit()
+        self.vectorizer = joblib.load(app_config.VECTORIZER_FILE_PATH)
+        self.tfidf_matrix = joblib.load(app_config.MATRIX_FILE_PATH)
+        self.documents = joblib.load(app_config.DOCUMENTS_FILE_PATH)
+        self.doc_id_map = joblib.load(app_config.DOC_ID_MAP_FILE_PATH)
 
     def search(self, query, top_k=10):
         """
@@ -65,7 +51,7 @@ class SearchEngine:
 
     def search_recipes(self, query: str, top_k: int = 10) -> List[SearchResult]:
         """
-        Search for recipes and return SearchResult objects
+        Tìm kiếm công thức và trả về danh sách các SearchResult
         """
         raw_results = self.search(query, top_k)
         return [SearchResult(**result) for result in raw_results]
