@@ -125,6 +125,24 @@
     margin-bottom: 20px;
 }
 
+.instructions strong {
+    color: var(--black);
+    font-size: 20px;
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+/* Highlight keyword styling */
+mark {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
 .back-button {
     display: inline-block;
     margin-bottom: 30px;
