@@ -17,11 +17,14 @@
                 <div class="logo">
                     <h1><a href="/" style="text-decoration: none; color: inherit;">NomNom</a></h1>
                 </div>
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="What do you want to cook today?" />
-                    <button id="searchBtn">
-                        <img src="assets/images/search-icon.svg" alt="Search" />
-                    </button>
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="What do you want to cook today?" />
+                        <button id="searchBtn">
+                            <img src="assets/images/search-icon.svg" alt="Search" />
+                        </button>
+                    </div>
+                    <div id="searchResults" class="search-results-dropdown"></div>
                 </div>
             </div>
             <div class="navbar-buttons">
@@ -39,22 +42,18 @@
     <!-- Recipe of The Day -->
     <section class="recipe-of-day">
         <div class="recipe-image">
-            <img src="assets/images/recipe-of-the-day.png" alt="Recipe of the day" />
+            <img id="recipeOfDayImage" src="assets/images/recipe-of-the-day.png" alt="Recipe of the day" />
         </div>
         <div class="recipe-content">
             <div class="recipe-text">
                 <p class="recipe-label">RECIPE OF THE DAY</p>
-                <h2>Skillet Cacio e Pepe Tortellini With Wilted Greens</h2>
+                <h2 id="recipeOfDayTitle">Skillet Cacio e Pepe Tortellini With Wilted Greens</h2>
             </div>
             <div class="recipe-details">
-                <p class="recipe-author">By Luna Marshall</p>
-                <p class="recipe-description">
+                <p class="recipe-author" id="recipeOfDayAuthor">By Luna Marshall</p>
+                <p class="recipe-description" id="recipeOfDayDescription">
                     Tired of dry, bland burgers? Learn how to make the juiciest, most flavorful homemade burgers using fresh ingredients, the perfect seasoning mix, and expert grilling Read More
                 </p>
-                <div class="recipe-reviews">
-                    <div class="stars">★★★★★</div>
-                    <span>(45)</span>
-                </div>
             </div>
         </div>
     </section>

@@ -1,7 +1,7 @@
 // API Configuration
 const config = {
     // Backend API URL
-    apiUrl: process.env.API_URL || 'http://localhost:5000/api',
+    apiUrl: process.env.API_URL || 'http://localhost:8000',
     
     // API Endpoints
     endpoints: {

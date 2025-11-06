@@ -1,10 +1,11 @@
 // Recipe Detail Page Logic
-const API_BASE_URL = 'http://localhost:8000/api'; // Backend API URL
+const API_BASE_URL = 'http://localhost:8000'; // Backend API URL
 const LOCAL_RECIPES_PATH = 'data/recipes_with_local_images.json'; // Fallback
 
-// Get recipe ID from URL
+// Get recipe ID and search query from URL
 const urlParams = new URLSearchParams(window.location.search);
 const recipeId = urlParams.get('id');
+const searchQuery = urlParams.get('q'); // Get search keyword for highlighting
 
 // DOM Elements
 const loadingState = document.getElementById('loadingState');
@@ -58,6 +59,16 @@ async function loadRecipeDetail(id) {
     }
 }
 
+// Highlight keyword in text
+function highlightText(text, keyword) {
+    if (!keyword || !text) return text;
+    
+    // Escape special regex characters in keyword
+    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedKeyword})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+}
+
 // Display Recipe Detail
 function displayRecipeDetail(recipe) {
     hideLoading();
@@ -80,17 +91,17 @@ function displayRecipeDetail(recipe) {
                 if (typeof ing === 'string') {
                     return `
                         <li>
-                            <span class="ingredient-name">${ing}</span>
+                            <span class="ingredient-name">${highlightText(ing, searchQuery)}</span>
                         </li>
                     `;
                 } else {
                     const measure = ing.measure && ing.measure.trim() !== '' 
-                        ? `<span class="ingredient-measure">${ing.measure}</span>` 
+                        ? `<span class="ingredient-measure">${highlightText(ing.measure, searchQuery)}</span>` 
                         : '';
                     return `
                         <li>
                             ${measure}
-                            <span class="ingredient-name">${ing.ingredient}</span>
+                            <span class="ingredient-name">${highlightText(ing.ingredient, searchQuery)}</span>
                         </li>
                     `;
                 }
@@ -102,22 +113,30 @@ function displayRecipeDetail(recipe) {
         ingredientsList = '<li>Ingredient information not available</li>';
     }
     
-    // Format instructions with line breaks
-    const formattedInstructions = recipe.instructions 
-        ? recipe.instructions.replace(/\r\n/g, '\n').split('\n').filter(line => line.trim()).join('\n\n')
+    // Format instructions with line breaks and bold steps
+    let formattedInstructions = recipe.instructions 
+        ? recipe.instructions.replace(/\r\n/g, '\n')
         : 'Cooking instructions not available.';
+    
+    // Make STEP headers bold
+    formattedInstructions = formattedInstructions
+        .replace(/STEP\s+\d+\s*[-–—:]\s*[^\n]+/gi, (match) => `<strong>${match}</strong>`)
+        .split('\n')
+        .filter(line => line.trim())
+        .map(line => `<p>${highlightText(line, searchQuery)}</p>`)
+        .join('');
     
     const html = `
         <a href="/" class="back-button">← Back</a>
         
         <div class="recipe-header">
-            <h1>${recipe.title}</h1>
+            <h1>${highlightText(recipe.title, searchQuery)}</h1>
             <div class="recipe-meta">
                 <div class="recipe-meta-item">
-                    <strong>Category:</strong> ${recipe.category}
+                    <strong>Category:</strong> ${highlightText(recipe.category, searchQuery)}
                 </div>
                 <div class="recipe-meta-item">
-                    <strong>Cuisine:</strong> ${recipe.area}
+                    <strong>Cuisine:</strong> ${highlightText(recipe.area, searchQuery)}
                 </div>
                 <div class="recipe-meta-item">
                     <strong>Time:</strong> ~${estimatedTime} mins

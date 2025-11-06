@@ -1,10 +1,11 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:8000/api'; // Backend API URL
+const API_BASE_URL = 'http://localhost:8000'; // Backend API URL
 const LOCAL_RECIPES_PATH = 'data/recipes_with_local_images.json'; // Fallback
 
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
+const searchResultsDropdown = document.getElementById('searchResults');
 const recipesContainer = document.getElementById('recipesContainer');
 const filterBtns = document.querySelectorAll('.filter-btn');
 
@@ -14,11 +15,13 @@ let allRecipes = [];
 let filteredRecipes = [];
 let currentPage = 1;
 const recipesPerPage = 12;
+let searchTimeout = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadLocalRecipes();
     setupEventListeners();
+    loadRecipeOfTheDay();
 });
 
 // Setup Event Listeners
@@ -31,6 +34,29 @@ function setupEventListeners() {
         }
     });
 
+    // Real-time search suggestions
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length >= 2) {
+            searchTimeout = setTimeout(() => {
+                handleSearchSuggestions(query);
+            }, 300);
+        } else {
+            hideSearchResults();
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchResultsDropdown.contains(e.target) && 
+            !searchInput.contains(e.target) && 
+            !searchBtn.contains(e.target)) {
+            hideSearchResults();
+        }
+    });
+
     // Filter buttons
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -40,6 +66,7 @@ function setupEventListeners() {
             btn.classList.add('active');
             currentFilter = btn.textContent;
             filterRecipesByCategory(currentFilter);
+            hideSearchResults();
         });
     });
 }
@@ -51,7 +78,7 @@ async function loadLocalRecipes() {
         const response = await fetch(`${API_BASE_URL}/recipes`);
 
         if (!response.ok) {
-            throw new Error('Không thể tải dữ liệu công thức từ server');
+            throw new Error('Unable to load recipe data from server');
         }
 
         allRecipes = await response.json();
@@ -81,6 +108,58 @@ async function loadLocalRecipes() {
         }
     } finally {
         hideLoading();
+    }
+}
+
+// Load Recipe of The Day (Random)
+async function loadRecipeOfTheDay() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/recipes?limit=100`);
+        if (!response.ok) {
+            throw new Error('Unable to load recipes');
+        }
+
+        const recipes = await response.json();
+        if (recipes.length > 0) {
+            // Get random recipe
+            const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+            displayRecipeOfTheDay(randomRecipe);
+        }
+    } catch (error) {
+        console.error('Load recipe of the day error:', error);
+        // Keep default content if fails
+    }
+}
+
+// Display Recipe of The Day
+function displayRecipeOfTheDay(recipe) {
+    const imageElement = document.getElementById('recipeOfDayImage');
+    const titleElement = document.getElementById('recipeOfDayTitle');
+    const authorElement = document.getElementById('recipeOfDayAuthor');
+    const descriptionElement = document.getElementById('recipeOfDayDescription');
+
+    if (imageElement) {
+        imageElement.src = recipe.image || 'assets/images/recipe-of-the-day.png';
+        imageElement.alt = recipe.title;
+        imageElement.onclick = () => viewRecipe(recipe.id);
+        imageElement.style.cursor = 'pointer';
+    }
+
+    if (titleElement) {
+        titleElement.textContent = recipe.title;
+        titleElement.onclick = () => viewRecipe(recipe.id);
+        titleElement.style.cursor = 'pointer';
+    }
+
+    if (authorElement) {
+        authorElement.textContent = `By ${recipe.area} Chef`;
+    }
+
+    if (descriptionElement) {
+        const description = recipe.instructions 
+            ? recipe.instructions.substring(0, 200) + '...'
+            : 'Delicious recipe. Click to view more details.';
+        descriptionElement.textContent = description;
     }
 }
 
@@ -126,7 +205,7 @@ function createSmallRecipeCard(recipe) {
     
     const description = recipe.instructions 
         ? recipe.instructions.substring(0, 100) + '...' 
-        : 'Món ăn ngon và dễ làm.';
+        : 'Delicious and easy to make.';
     
     const imageUrl = recipe.image || 'assets/images/thai-green-curry.png';
     
@@ -141,13 +220,75 @@ function createSmallRecipeCard(recipe) {
                 <h3>${recipe.title}</h3>
                 <p class="recipe-author">By ${recipe.area} Chef</p>
                 <p class="recipe-desc">${description}</p>
-                <div class="recipe-reviews">
-                    <div class="stars">★★★★★</div>
-                    <span>(${Math.floor(Math.random() * 50) + 10})</span>
-                </div>
             </div>
         </div>
     `;
+}
+
+// Handle Search Suggestions (Real-time dropdown)
+async function handleSearchSuggestions(query) {
+    try {
+        showSearchLoading();
+
+        const searchResponse = await fetch(`${API_BASE_URL}/search`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: query,
+                top_k: 10 // Chỉ lấy 10 kết quả cho suggestions
+            })
+        });
+
+        if (!searchResponse.ok) {
+            throw new Error('Search request failed');
+        }
+
+        const searchResults = await searchResponse.json();
+        displaySearchResults(searchResults);
+    } catch (error) {
+        console.error('Search suggestions error:', error);
+        hideSearchResults();
+    }
+}
+
+// Display Search Results in Dropdown
+function displaySearchResults(results) {
+    if (results.length === 0) {
+        searchResultsDropdown.innerHTML = '<div class="search-no-results">No results found</div>';
+        searchResultsDropdown.classList.add('show');
+        return;
+    }
+
+    const query = searchInput.value.trim();
+    const resultsHTML = results.map(result => `
+        <div class="search-result-item" onclick="viewRecipeWithQuery('${result.id}', '${encodeURIComponent(query)}')">
+            <img src="${result.image || 'assets/images/thai-green-curry.png'}" 
+                 alt="${result.title}" 
+                 class="search-result-image" />
+            <div class="search-result-info">
+                <h4 class="search-result-title">${result.title}</h4>
+                <p class="search-result-meta">${result.category} • ${result.area}</p>
+                <p class="search-result-score">Match: ${(result.score * 100).toFixed(0)}%</p>
+            </div>
+        </div>
+    `).join('');
+
+    searchResultsDropdown.innerHTML = resultsHTML;
+    searchResultsDropdown.classList.add('show');
+}
+
+// Show Search Loading
+function showSearchLoading() {
+    searchResultsDropdown.innerHTML = '<div class="search-loading">Searching...</div>';
+    searchResultsDropdown.classList.add('show');
+}
+
+// Hide Search Results
+function hideSearchResults() {
+    searchResultsDropdown.classList.remove('show');
+    searchResultsDropdown.innerHTML = '';
 }
 
 // Handle Search using Backend API
@@ -155,15 +296,12 @@ async function handleSearch() {
     const query = searchInput.value.trim();
 
     if (query === '') {
-        // Reset to show all recipes
-        filteredRecipes = [...allRecipes];
-        currentPage = 1;
-        displayRecipesWithPagination();
+        hideSearchResults();
         return;
     }
 
     try {
-        showLoading();
+        showSearchLoading();
 
         // Use backend search API
         const searchResponse = await fetch(`${API_BASE_URL}/search`, {
@@ -173,7 +311,7 @@ async function handleSearch() {
             },
             body: JSON.stringify({
                 query: query,
-                top_k: 50 // Get more results for local filtering
+                top_k: 50
             })
         });
 
@@ -182,46 +320,16 @@ async function handleSearch() {
         }
 
         const searchResults = await searchResponse.json();
-        filteredRecipes = searchResults.map(result => ({
-            ...result,
-            // Ensure all required fields exist
-            category: result.category || 'N/A',
-            area: result.area || 'N/A',
-            image: result.image || 'assets/images/thai-green-curry.png'
-        }));
+        displaySearchResults(searchResults);
 
-        currentPage = 1;
-        displayRecipesWithPagination();
-
-        if (filteredRecipes.length === 0) {
-            showError(`Không tìm thấy công thức nào cho "${query}"`);
+        if (searchResults.length === 0) {
+            searchResultsDropdown.innerHTML = '<div class="search-no-results">No recipes found for "' + query + '"</div>';
+            searchResultsDropdown.classList.add('show');
         }
     } catch (error) {
         console.error('Search error:', error);
-        // Fallback to local search if API fails
-        try {
-            filteredRecipes = allRecipes.filter(recipe =>
-                recipe.title.toLowerCase().includes(query.toLowerCase()) ||
-                recipe.category.toLowerCase().includes(query.toLowerCase()) ||
-                recipe.area.toLowerCase().includes(query.toLowerCase()) ||
-                (recipe.ingredients && recipe.ingredients.some(ing =>
-                    (typeof ing === 'string' && ing.toLowerCase().includes(query.toLowerCase())) ||
-                    (typeof ing === 'object' && ing.ingredient && ing.ingredient.toLowerCase().includes(query.toLowerCase()))
-                ))
-            );
-
-            currentPage = 1;
-            displayRecipesWithPagination();
-
-            if (filteredRecipes.length === 0) {
-                showError(`Không tìm thấy công thức nào cho "${query}"`);
-            }
-        } catch (fallbackError) {
-            console.error('Fallback search error:', fallbackError);
-            showError('Không thể tìm kiếm công thức. Vui lòng thử lại sau.');
-        }
-    } finally {
-        hideLoading();
+        searchResultsDropdown.innerHTML = '<div class="search-no-results">Search error. Please try again.</div>';
+        searchResultsDropdown.classList.add('show');
     }
 }
 
@@ -277,7 +385,7 @@ function displayRecipes(recipes) {
     if (!recipesContainer) return;
 
     if (recipes.length === 0) {
-        recipesContainer.innerHTML = '<p class="no-results">Không tìm thấy công thức nào.</p>';
+        recipesContainer.innerHTML = '<p class="no-results">No recipes found.</p>';
         return;
     }
 
@@ -299,16 +407,16 @@ function displayPagination() {
     const paginationHTML = `
         <div class="pagination-container">
             <div class="pagination-info">
-                Hiển thị ${(currentPage - 1) * recipesPerPage + 1}-${Math.min(currentPage * recipesPerPage, filteredRecipes.length)} 
-                trong tổng số ${filteredRecipes.length} công thức
+                Showing ${(currentPage - 1) * recipesPerPage + 1}-${Math.min(currentPage * recipesPerPage, filteredRecipes.length)} 
+                of ${filteredRecipes.length} recipes
             </div>
             <div class="pagination-buttons">
                 <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-                    ← Trước
+                    ← Previous
                 </button>
                 ${generatePageNumbers(currentPage, totalPages)}
                 <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-                    Sau →
+                    Next →
                 </button>
             </div>
         </div>
@@ -362,6 +470,20 @@ function changePage(page) {
 // Make changePage available globally
 window.changePage = changePage;
 
+// View Recipe Details
+function viewRecipe(recipeId) {
+    window.location.href = `/recipe.html?id=${recipeId}`;
+}
+
+// View Recipe with Search Query
+function viewRecipeWithQuery(recipeId, query) {
+    window.location.href = `/recipe.html?id=${recipeId}&q=${query}`;
+}
+
+// Make functions available globally
+window.viewRecipe = viewRecipe;
+window.viewRecipeWithQuery = viewRecipeWithQuery;
+
 // Create Recipe Card HTML from TheMealDB data
 function createRecipeCard(recipe) {
     // Determine difficulty based on instructions length
@@ -372,14 +494,10 @@ function createRecipeCard(recipe) {
         else if (instructionsLength > 250) difficulty = 'medium';
     }
     
-    // Generate random rating and reviews for demo
-    const rating = 5;
-    const reviews = Math.floor(Math.random() * 100) + 5;
-    
     // Truncate instructions for preview
     const description = recipe.instructions 
         ? recipe.instructions.substring(0, 120) + '...' 
-        : 'Công thức nấu ăn ngon.';
+        : 'Delicious recipe.';
     
     // Calculate estimated time based on instructions
     const estimatedTime = recipe.instructions 
@@ -401,10 +519,6 @@ function createRecipeCard(recipe) {
                 <p class="recipe-author">By NomNom Chef</p>
                 <p class="recipe-category">${recipe.category} • ${recipe.area}</p>
                 <p class="recipe-desc">${description}</p>
-                <div class="recipe-reviews">
-                    <div class="stars">${'★'.repeat(rating)}${'☆'.repeat(5-rating)}</div>
-                    <span>(${reviews})</span>
-                </div>
             </div>
         </div>
     `;
@@ -471,7 +585,7 @@ function displaySampleRecipes() {
 // Loading State
 function showLoading() {
     if (recipesContainer) {
-        recipesContainer.innerHTML = '<div class="loading">Đang tải...</div>';
+        recipesContainer.innerHTML = '<div class="loading">Loading...</div>';
     }
 }
 

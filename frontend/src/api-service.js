@@ -1,7 +1,7 @@
 // API Service for handling all backend communications
 class ApiService {
     constructor(baseUrl) {
-        this.baseUrl = baseUrl || 'http://localhost:5000/api';
+        this.baseUrl = baseUrl || 'http://localhost:8000';
         this.timeout = 5000; // 5 seconds
     }
 
