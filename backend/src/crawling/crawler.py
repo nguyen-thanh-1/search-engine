@@ -8,7 +8,7 @@ from src.app_config import app_config
 
 class TheMealDBCrawler:
     """
-    A crawler for TheMealDB public API
+    Crawler cho TheMealDB API
     - Thu thập dữ liệu món ăn theo từ khóa hoặc thể loại
     - Lưu dữ liệu ra file JSON
     """
