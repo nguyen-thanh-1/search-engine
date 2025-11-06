@@ -55,3 +55,28 @@ class SearchEngine:
         """
         raw_results = self.search(query, top_k)
         return [SearchResult(**result) for result in raw_results]
+
+    def search_by_ingredients(self, ingredients: List[str], top_k: int = 10) -> List[SearchResult]:
+        ingredients_lower = [ing.lower() for ing in ingredients]
+        results = []
+        
+        for doc_id, doc in self.documents.items():
+            doc_ingredients = doc.get("ingredients", [])
+            doc_ingredients_lower = [ing.lower() for ing in doc_ingredients]
+            
+            matches = sum(1 for ingredient in ingredients_lower 
+                         if any(ingredient in doc_ing for doc_ing in doc_ingredients_lower))
+            
+            if matches > 0:
+                score = matches / len(ingredients_lower)
+                results.append({
+                    "id": doc_id,
+                    "title": doc["title"],
+                    "score": score,
+                    "category": doc.get("category", "N/A"),
+                    "area": doc.get("area", "N/A"),
+                    "image": doc.get("image", ""),
+                })
+        
+        results.sort(key=lambda x: x["score"], reverse=True)
+        return [SearchResult(**result) for result in results[:top_k]]
