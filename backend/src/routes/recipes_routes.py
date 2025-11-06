@@ -1,32 +1,29 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-import json
+import joblib
 
 from src.app_config import app_config
 from src.schemas.recipe_schemas import Recipe, SearchResult
 from src.search.engine import SearchEngine
 
-router = APIRouter(prefix="/api", tags=["recipes"])
+router = APIRouter(tags=["recipes"])
 search_engine = SearchEngine()
 
 
 @router.get("/recipes", response_model=List[Recipe])
 def get_all_recipes(
-    limit: Optional[int] = Query(None, description="Limit number of results"),
-    category: Optional[str] = Query(None, description="Filter by category"),
-    area: Optional[str] = Query(None, description="Filter by area")
+    limit: Optional[int] = Query(None, description="Giới hạn số lượng kết quả"),
+    category: Optional[str] = Query(None, description="Lọc theo danh mục"),
+    area: Optional[str] = Query(None, description="Lọc theo khu vực")
 ):
     """
-    Get all recipes with optional filtering
+    Lấy tất cả công thức nấu ăn với bộ lọc tùy chọn
     """
     try:
-        # Load documents from joblib file
-        import joblib
         documents_dict = joblib.load(app_config.DOCUMENTS_FILE_PATH)
-
         recipes = []
         for recipe_id, recipe_data in documents_dict.items():
-            # Apply filters if provided
+            # Áp dụng bộ lọc nếu có
             if category and recipe_data.get("category") != category:
                 continue
             if area and recipe_data.get("area") != area:
@@ -43,29 +40,29 @@ def get_all_recipes(
             )
             recipes.append(recipe)
 
-        # Apply limit if provided
+        # Áp dụng giới hạn nếu có
         if limit:
             recipes = recipes[:limit]
 
         return recipes
 
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Recipe data not found. Please run indexing first.")
+        raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu công thức. Vui lòng chạy indexing trước.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading recipes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lỗi khi tải công thức: {str(e)}")
 
 
 @router.get("/recipes/{recipe_id}", response_model=Recipe)
 def get_recipe_detail(recipe_id: str):
     """
-    Get detailed information for a specific recipe
+    Lấy thông tin chi tiết của một công thức cụ thể
     """
     try:
         import joblib
         documents_dict = joblib.load(app_config.DOCUMENTS_FILE_PATH)
 
         if recipe_id not in documents_dict:
-            raise HTTPException(status_code=404, detail="Recipe not found")
+            raise HTTPException(status_code=404, detail="Không tìm thấy công thức")
 
         recipe_data = documents_dict[recipe_id]
 
@@ -82,15 +79,15 @@ def get_recipe_detail(recipe_id: str):
         return recipe
 
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Recipe data not found. Please run indexing first.")
+        raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu công thức. Vui lòng chạy indexing trước.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading recipe: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lỗi khi tải công thức: {str(e)}")
 
 
 @router.get("/categories", response_model=List[str])
 def get_categories():
     """
-    Get all available recipe categories
+    Lấy tất cả danh mục công thức có sẵn
     """
     try:
         import joblib
@@ -105,15 +102,15 @@ def get_categories():
         return sorted(list(categories))
 
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Recipe data not found. Please run indexing first.")
+        raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu công thức. Vui lòng chạy indexing trước.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading categories: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lỗi khi tải danh mục: {str(e)}")
 
 
 @router.get("/areas", response_model=List[str])
 def get_areas():
     """
-    Get all available cuisine areas
+    Lấy tất cả khu vực ẩm thực có sẵn
     """
     try:
         import joblib
@@ -128,15 +125,15 @@ def get_areas():
         return sorted(list(areas))
 
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Recipe data not found. Please run indexing first.")
+        raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu công thức. Vui lòng chạy indexing trước.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading areas: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lỗi khi tải khu vực: {str(e)}")
 
 
 @router.get("/popular", response_model=List[SearchResult])
-def get_popular_recipes(limit: int = Query(10, description="Number of popular recipes to return")):
+def get_popular_recipes(limit: int = Query(10, description="Số lượng công thức phổ biến trả về")):
     """
-    Get popular recipes (simplified - returns first recipes)
+    Lấy công thức phổ biến (đơn giản hóa - trả về các công thức đầu tiên)
     """
     try:
         import joblib
@@ -152,7 +149,7 @@ def get_popular_recipes(limit: int = Query(10, description="Number of popular re
             recipe = SearchResult(
                 id=recipe_id,
                 title=recipe_data.get("title", ""),
-                score=1.0,  # Default score for popular recipes
+                score=1.0,  # Điểm mặc định cho công thức phổ biến
                 category=recipe_data.get("category", "N/A"),
                 area=recipe_data.get("area", "N/A"),
                 image=recipe_data.get("image", "")
@@ -163,6 +160,6 @@ def get_popular_recipes(limit: int = Query(10, description="Number of popular re
         return popular_recipes
 
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Recipe data not found. Please run indexing first.")
+        raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu công thức. Vui lòng chạy indexing trước.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading popular recipes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lỗi khi tải công thức phổ biến: {str(e)}")
