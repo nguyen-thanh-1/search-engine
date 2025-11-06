@@ -174,6 +174,33 @@ class ApiService {
             return false;
         }
     }
+
+    // Search recipes by ingredients
+    async searchByIngredients(ingredientsList) {
+        try {
+            const ingredientsParam = ingredientsList.join(",");
+            const url = `${this.baseUrl}/search/ingredients?ingredients=${encodeURIComponent(ingredientsParam)}&top_k=10`;
+            const response = await this.fetchWithTimeout(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return {
+                success: true,
+                data: data || [],
+                error: null
+            };
+        } catch (error) {
+            console.error('Ingredient search error:', error);
+            return {
+                success: false,
+                data: [],
+                error: error.message
+            };
+        }
+    }
 }
 
 // Export for use

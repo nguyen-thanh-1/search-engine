@@ -18,6 +18,16 @@
                     <h1><a href="/" style="text-decoration: none; color: inherit;">NomNom</a></h1>
                 </div>
                 <div class="search-container">
+                    <div class="search-options">
+                        <label class="search-option">
+                            <input type="radio" name="searchType" value="name" checked />
+                            <span>Recipe Name</span>
+                        </label>
+                        <label class="search-option">
+                            <input type="radio" name="searchType" value="ingredient" />
+                            <span>Ingredients</span>
+                        </label>
+                    </div>
                     <div class="search-bar">
                         <input type="text" id="searchInput" placeholder="What do you want to cook today?" />
                         <button id="searchBtn">
@@ -183,6 +193,7 @@
         </div>
     </footer>
 
+    <script src="src/api-service.js"></script>
     <script src="src/app.js"></script>
 </body>
 </html>

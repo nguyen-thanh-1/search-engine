@@ -8,6 +8,7 @@ const searchBtn = document.getElementById('searchBtn');
 const searchResultsDropdown = document.getElementById('searchResults');
 const recipesContainer = document.getElementById('recipesContainer');
 const filterBtns = document.querySelectorAll('.filter-btn');
+let searchTypeRadios = null;
 
 // State
 let currentFilter = 'all';
@@ -16,9 +17,12 @@ let filteredRecipes = [];
 let currentPage = 1;
 const recipesPerPage = 12;
 let searchTimeout = null;
+let apiService = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    apiService = new ApiService(API_BASE_URL);
+    searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
     loadLocalRecipes();
     setupEventListeners();
     loadRecipeOfTheDay();
@@ -26,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Setup Event Listeners
 function setupEventListeners() {
-    // Search functionality
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -34,7 +37,6 @@ function setupEventListeners() {
         }
     });
 
-    // Real-time search suggestions
     searchInput.addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         const query = e.target.value.trim();
@@ -48,7 +50,6 @@ function setupEventListeners() {
         }
     });
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!searchResultsDropdown.contains(e.target) && 
             !searchInput.contains(e.target) && 
@@ -57,18 +58,27 @@ function setupEventListeners() {
         }
     });
 
-    // Filter buttons
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Remove active class from all buttons
             filterBtns.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
             btn.classList.add('active');
             currentFilter = btn.textContent;
             filterRecipesByCategory(currentFilter);
             hideSearchResults();
         });
     });
+
+    if (searchTypeRadios) {
+        searchTypeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const placeholder = e.target.value === 'name' 
+                    ? 'What do you want to cook today?' 
+                    : 'Enter ingredients (comma separated)';
+                searchInput.placeholder = placeholder;
+                hideSearchResults();
+            });
+        });
+    }
 }
 
 // Load Recipes from Backend API
@@ -230,23 +240,40 @@ async function handleSearchSuggestions(query) {
     try {
         showSearchLoading();
 
-        const searchResponse = await fetch(`${API_BASE_URL}/search`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: query,
-                top_k: 10 // Chỉ lấy 10 kết quả cho suggestions
-            })
-        });
+        const searchType = document.querySelector('input[name="searchType"]:checked')?.value || 'name';
 
-        if (!searchResponse.ok) {
-            throw new Error('Search request failed');
+        if (searchType === 'ingredient') {
+            const ingredients = query.split(',').map(ing => ing.trim()).filter(ing => ing);
+            if (ingredients.length === 0) {
+                hideSearchResults();
+                return;
+            }
+
+            const result = await apiService.searchByIngredients(ingredients);
+            if (result.success) {
+                displaySearchResults(result.data);
+            } else {
+                hideSearchResults();
+            }
+        } else {
+            const searchResponse = await fetch(`${API_BASE_URL}/search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    top_k: 10
+                })
+            });
+
+            if (!searchResponse.ok) {
+                throw new Error('Search request failed');
+            }
+
+            const searchResults = await searchResponse.json();
+            displaySearchResults(searchResults);
         }
-
-        const searchResults = await searchResponse.json();
-        displaySearchResults(searchResults);
     } catch (error) {
         console.error('Search suggestions error:', error);
         hideSearchResults();
@@ -303,28 +330,50 @@ async function handleSearch() {
     try {
         showSearchLoading();
 
-        // Use backend search API
-        const searchResponse = await fetch(`${API_BASE_URL}/search`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: query,
-                top_k: 50
-            })
-        });
+        const searchType = document.querySelector('input[name="searchType"]:checked')?.value || 'name';
 
-        if (!searchResponse.ok) {
-            throw new Error('Search request failed');
-        }
+        if (searchType === 'ingredient') {
+            const ingredients = query.split(',').map(ing => ing.trim()).filter(ing => ing);
+            if (ingredients.length === 0) {
+                searchResultsDropdown.innerHTML = '<div class="search-no-results">Please enter at least one ingredient</div>';
+                searchResultsDropdown.classList.add('show');
+                return;
+            }
 
-        const searchResults = await searchResponse.json();
-        displaySearchResults(searchResults);
+            const result = await apiService.searchByIngredients(ingredients);
+            if (result.success) {
+                displaySearchResults(result.data);
+                if (result.data.length === 0) {
+                    searchResultsDropdown.innerHTML = '<div class="search-no-results">No recipes found with these ingredients</div>';
+                    searchResultsDropdown.classList.add('show');
+                }
+            } else {
+                searchResultsDropdown.innerHTML = '<div class="search-no-results">Search error. Please try again.</div>';
+                searchResultsDropdown.classList.add('show');
+            }
+        } else {
+            const searchResponse = await fetch(`${API_BASE_URL}/search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    top_k: 50
+                })
+            });
 
-        if (searchResults.length === 0) {
-            searchResultsDropdown.innerHTML = '<div class="search-no-results">No recipes found for "' + query + '"</div>';
-            searchResultsDropdown.classList.add('show');
+            if (!searchResponse.ok) {
+                throw new Error('Search request failed');
+            }
+
+            const searchResults = await searchResponse.json();
+            displaySearchResults(searchResults);
+
+            if (searchResults.length === 0) {
+                searchResultsDropdown.innerHTML = '<div class="search-no-results">No recipes found for "' + query + '"</div>';
+                searchResultsDropdown.classList.add('show');
+            }
         }
     } catch (error) {
         console.error('Search error:', error);
