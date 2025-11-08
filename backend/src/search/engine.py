@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List
 
 import joblib
@@ -14,6 +15,32 @@ class SearchEngine:
         self.tfidf_matrix = joblib.load(app_config.MATRIX_FILE_PATH)
         self.documents = joblib.load(app_config.DOCUMENTS_FILE_PATH)
         self.doc_id_map = joblib.load(app_config.DOC_ID_MAP_FILE_PATH)
+
+    def _generate_snippet(self, doc_id: str, query: str) -> str:
+        """Tạo đoạn trích ngắn từ hướng dẫn nấu ăn (instructions) với từ khóa được highlight"""
+        doc = self.documents.get(doc_id, {})
+        full_text = doc.get('instructions', '')  # Lấy phần hướng dẫn nấu ăn
+        
+        if not full_text:
+            return doc.get('title', '')
+        
+        # Tách thành các từ
+        tokens = re.findall(r'\b\w+\b', full_text)
+        query_terms = set(re.findall(r'\b\w+\b', query.lower()))
+        
+        # Tìm từ khóa đầu tiên trong hướng dẫn
+        for i, token in enumerate(tokens):
+            if token.lower() in query_terms:
+                # Lấy 10 từ trước và sau làm context
+                start = max(0, i - 10)
+                end = min(len(tokens), i + 10)
+                snippet = tokens[start:end]
+                # Highlight từ khóa
+                snippet[i - start] = f"<b>{snippet[i - start]}</b>"
+                return " ".join(snippet) + "..."
+        
+        # Không tìm thấy -> trả về 25 từ đầu
+        return " ".join(tokens[:25]) + "..."
 
     def search(self, query, top_k=10):
         """
@@ -44,6 +71,7 @@ class SearchEngine:
                     "category": doc.get("category", "N/A"),
                     "area": doc.get("area", "N/A"),
                     "image": doc.get("image", ""),
+                    "snippet": self._generate_snippet(doc_id, query),
                 }
             )
 
@@ -76,6 +104,7 @@ class SearchEngine:
                     "category": doc.get("category", "N/A"),
                     "area": doc.get("area", "N/A"),
                     "image": doc.get("image", ""),
+                    "snippet": self._generate_snippet(doc_id, " ".join(ingredients)),
                 })
         
         results.sort(key=lambda x: x["score"], reverse=True)

@@ -289,18 +289,21 @@ function displaySearchResults(results) {
     }
 
     const query = searchInput.value.trim();
-    const resultsHTML = results.map(result => `
+    const resultsHTML = results.map(result => {
+        const snippet = result.snippet || `${result.category} • ${result.area}`;
+        return `
         <div class="search-result-item" onclick="viewRecipeWithQuery('${result.id}', '${encodeURIComponent(query)}')">
             <img src="${result.image || 'assets/images/thai-green-curry.png'}" 
                  alt="${result.title}" 
                  class="search-result-image" />
             <div class="search-result-info">
                 <h4 class="search-result-title">${result.title}</h4>
-                <p class="search-result-meta">${result.category} • ${result.area}</p>
+                <p class="search-result-snippet">${snippet}</p>
                 <p class="search-result-score">Match: ${(result.score * 100).toFixed(0)}%</p>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     searchResultsDropdown.innerHTML = resultsHTML;
     searchResultsDropdown.classList.add('show');
@@ -535,7 +538,6 @@ window.viewRecipeWithQuery = viewRecipeWithQuery;
 
 // Create Recipe Card HTML from TheMealDB data
 function createRecipeCard(recipe) {
-    // Determine difficulty based on instructions length
     let difficulty = 'easy';
     if (recipe.instructions) {
         const instructionsLength = recipe.instructions.length;
@@ -543,17 +545,17 @@ function createRecipeCard(recipe) {
         else if (instructionsLength > 250) difficulty = 'medium';
     }
     
-    // Truncate instructions for preview
-    const description = recipe.instructions 
-        ? recipe.instructions.substring(0, 120) + '...' 
-        : 'Delicious recipe.';
+    // Use snippet if available, otherwise truncate instructions
+    const description = recipe.snippet 
+        ? recipe.snippet 
+        : (recipe.instructions 
+            ? recipe.instructions.substring(0, 120) + '...' 
+            : 'Delicious recipe.');
     
-    // Calculate estimated time based on instructions
     const estimatedTime = recipe.instructions 
         ? Math.max(15, Math.min(120, Math.floor(recipe.instructions.length / 10)))
         : 30;
     
-    // Ensure image URL is valid (now using local paths)
     const imageUrl = recipe.image || 'assets/images/thai-green-curry.png';
     
     return `

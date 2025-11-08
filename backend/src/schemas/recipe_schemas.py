@@ -20,6 +20,7 @@ class SearchResult(BaseModel):
     category: str
     area: str
     image: str
+    snippet: Optional[str] = None
 
 
 class SearchRequest(BaseModel):

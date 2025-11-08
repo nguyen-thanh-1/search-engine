@@ -348,6 +348,23 @@ img {
     color: var(--medium-gray);
 }
 
+.search-result-snippet {
+    font-family: var(--font-secondary);
+    font-size: 14px;
+    color: var(--black);
+    margin: 5px 0;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.search-result-snippet b {
+    color: var(--primary-red);
+    font-weight: 700;
+    background-color: rgba(255, 69, 0, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
 .search-result-score {
     font-family: var(--font-secondary);
     font-size: 12px;
@@ -624,11 +641,19 @@ img {
 }
 
 .recipe-desc {
-    font-size: 16px;
-    font-weight: 300;
+    font-size: 15px;
+    font-weight: 400;
     line-height: 1.6;
-    color: var(--gray);
+    color: var(--black);
     margin: 8px 0;
+}
+
+.recipe-desc b {
+    color: var(--primary-red);
+    font-weight: 700;
+    background-color: rgba(255, 69, 0, 0.08);
+    padding: 2px 4px;
+    border-radius: 2px;
 }
 
 .recipe-category {

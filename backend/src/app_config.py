@@ -8,6 +8,7 @@ class AppConfig(BaseSettings):
     MATRIX_FILE_PATH: str = None
     DOCUMENTS_FILE_PATH: str = None
     DOC_ID_MAP_FILE_PATH: str = None
+    INVERTED_INDEX_FILE_PATH: str = None
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
