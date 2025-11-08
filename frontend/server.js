@@ -17,16 +17,6 @@ app.get('/home', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Route for about page
-app.get('/about', (req, res) => {
-    res.sendFile(path.join(__dirname, 'about.html'));
-});
-
-// Route for contact page
-app.get('/contact', (req, res) => {
-    res.sendFile(path.join(__dirname, 'contact.html'));
-});
-
 // Route for recipe detail page
 app.get('/recipe', (req, res) => {
     res.sendFile(path.join(__dirname, 'recipe.html'));
@@ -34,8 +24,6 @@ app.get('/recipe', (req, res) => {
 
 // Fallback for .html extensions (redirect to clean URLs)
 app.get('/index.html', (req, res) => res.redirect('/'));
-app.get('/about.html', (req, res) => res.redirect('/about'));
-app.get('/contact.html', (req, res) => res.redirect('/contact'));
 app.get('/recipe.html', (req, res) => res.redirect('/recipe'));
 
 // 404 handler
@@ -48,7 +36,5 @@ app.listen(PORT, () => {
     console.log(`📁 Serving files from: ${__dirname}`);
     console.log(`\n✨ Clean URLs enabled!`);
     console.log(`   - Homepage:  http://localhost:${PORT}/`);
-    console.log(`   - About:     http://localhost:${PORT}/about`);
-    console.log(`   - Contact:   http://localhost:${PORT}/contact`);
     console.log(`   - Recipe:    http://localhost:${PORT}/recipe?id=<recipe_id>\n`);
 });

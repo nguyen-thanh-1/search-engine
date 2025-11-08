@@ -406,31 +406,6 @@ img {
     gap: 20px;
 }
 
-.navbar-nav {
-    display: flex;
-    gap: 40px;
-    border-top: 1px solid #A3A3A3;
-    padding-top: 10px;
-}
-
-.nav-link {
-    font-family: var(--font-secondary);
-    font-weight: 500;
-    font-size: 16px;
-    color: var(--dark-gray);
-    text-decoration: none;
-    padding: 10px 8px;
-    position: relative;
-}
-
-.nav-link.active {
-    border-bottom: 3px solid var(--primary-red);
-}
-
-.nav-link:hover {
-    color: var(--primary-red);
-}
-
 /* Recipe of the Day */
 .recipe-of-day {
     display: flex;
