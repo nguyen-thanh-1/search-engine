@@ -139,11 +139,11 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
-data/
-*.joblib
-*.json
-recipes_by_keywords.json
-recipes_by_categories.json
+# data/
+# *.joblib
+# *.json
+# recipes_by_keywords.json
+# recipes_by_categories.json
 
 # Node.js (for frontend)
 node_modules/
