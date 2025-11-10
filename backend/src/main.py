@@ -2,7 +2,6 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.app_config import app_config
 from src.routes.crawling_routes import router as crawling_router
 from src.routes.search_routes import router as search_router
 from src.routes.recipes_routes import router as recipes_router
